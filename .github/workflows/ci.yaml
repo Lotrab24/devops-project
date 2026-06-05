@@ -1,0 +1,48 @@
+name: CI pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout koda
+        uses: actions/checkout@v4
+
+      - name: Build API slika
+        run: docker build -t devops-project-app-api:latest ./api
+
+      - name: Build Frontend slika
+        run: docker build -t devops-project-app-frontend:latest ./frontend
+
+      - name: Build Worker slika
+        run: docker build -t devops-project-app-worker:latest ./worker
+
+      - name: Trivy skeniranje API slike
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: devops-project-app-api:latest
+          format: table
+          exit-code: 0
+          severity: CRITICAL,HIGH
+
+      - name: Trivy skeniranje Frontend slike
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: devops-project-app-frontend:latest
+          format: table
+          exit-code: 0
+          severity: CRITICAL,HIGH
+
+      - name: Trivy skeniranje Worker slike
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: devops-project-app-worker:latest
+          format: table
+          exit-code: 0
+          severity: CRITICAL,HIGH
